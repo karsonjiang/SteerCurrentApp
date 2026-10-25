@@ -1,0 +1,82 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\title{The battery-only charge hypothesis}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Problem Setup}
+The presentation asks whether charge at the battery alone can make an
+electric field that guides current around a bent circuit. For this
+comparison, assume that the two battery terminals carry uniform,
+opposite charge densities. Put no charge on the wire surfaces or
+resistor interfaces. This is deliberately not the conducting
+circuit's solution.
+
+As in the rest of the app, the geometry is constant in the $z$
+direction. A terminal edge in the $xy$ plane extends indefinitely
+along $z$. We calculate its field at the center of every triangle
+of the unified mesh.
+
+\section{Finding the field of a charged terminal edge}
+Start with a line charge of strength $\lambda$ per unit $z$ length.
+A circular Gaussian surface of radius $r$ and unit depth has
+outward electric flux $E(2\pi r)$. Gauss's law therefore gives
+$E=\lambda/(2\pi\epsilon r)$. In vector form, the field at
+$\bm r$ from charge located at $\bm r'$ is proportional to
+$(\bm r-\bm r')/|\bm r-\bm r'|^2$.
+
+For a terminal mesh edge $e$ with constant charge density
+$\sigma_e$, a small piece $ds'$ contributes line charge
+$\sigma_e\,ds'$. Add all pieces of the edge:
+\begin{equation}
+ \bm E_e(\bm r)=
+ \frac{\sigma_e}{2\pi\epsilon}
+ \int_e
+ \frac{\bm r-\bm r'}{|\bm r-\bm r'|^2}\,ds'.
+ \label{eq:edge}
+\end{equation}
+The total toy field is the sum of equation~\eqref{eq:edge}
+over both terminals. The app evaluates each edge integral
+numerically with 12-point Gauss--Legendre quadrature. The
+evaluation points are triangle centers, away from the charged
+edges. This field spreads into the air and becomes weaker farther
+away; it does not respond to the shape of the rest of the wire.
+
+\section{Choosing the amount of terminal charge}
+The toy hypothesis does not tell us the charge density. We choose
+one scale so that its field inside the battery is comparable with
+the actual battery field. Let the battery EMF be $\mathcal E$,
+its length $\ell_b$, and its driving direction $\bm d_b$.
+The conduction law inside the battery is
+\begin{equation}
+ \bm J=\frac{\bm E+\bm F}{\rho_b},\qquad
+ \bm F=\frac{\mathcal E}{\ell_b}\bm d_b.
+\end{equation}
+In the limit of very small battery resistivity $\rho_b$ and finite
+current, $\bm E$ approaches $-\bm F$. We use the axial value
+$-\mathcal E/\ell_b$ as the calibration target.
+
+First give one terminal density $+1$ and the other $-1$, and
+calculate the resulting field $\bm E^{(1)}$. For the battery
+triangles $B$, compute its area-weighted response along the
+battery direction:
+\begin{equation}
+ R=\frac{\sum_{h\in B}A_h\,
+                  \bm E_h^{(1)}\cdot\bm d_b}
+         {\sum_{h\in B}A_h}.
+\end{equation}
+Electric field is linear in charge density, so multiplying both
+terminal densities and the trial field by
+\begin{equation}
+ \alpha=\frac{-\mathcal E/\ell_b}{R}
+\end{equation}
+makes the battery-average axial field match the target.
+The app displays $\bm E_{\rm toy}=\alpha\bm E^{(1)}$ and
+the corresponding terminal charges. This calibration does not
+make the toy field satisfy the wire's boundary conditions.
+
+\paragraph{Code:} \texttt{calculations/battery\_only.py}.
+\end{document}

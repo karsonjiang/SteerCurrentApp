@@ -1,0 +1,86 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\title{Conduction inside the circuit}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Problem Setup}
+The conductor is one closed loop, divided into wire, one battery, and
+possibly several resistor regions. Let $\rho$ be the resistivity in each
+region and $\gamma=1/\rho$ its conductivity. The electrostatic field is
+$\bm E=-\nabla V$. The battery also pushes charge by a mechanism represented
+by a driving field $\bm F$. The current density is
+\begin{equation}
+ \bm J=\gamma(\bm E+\bm F)
+       =\gamma(-\nabla V+\bm F).
+ \label{eq:current}
+\end{equation}
+If the battery has EMF $\mathcal E$, length $\ell_b$, and unit driving
+direction $\bm d_b$, the model sets
+\begin{equation}
+ \bm F=\begin{cases}
+       (\mathcal E/\ell_b)\bm d_b,&\text{inside the battery},\\
+       0,&\text{in the wire and resistors}.
+       \end{cases}
+\end{equation}
+The EMF is the total work supplied per unit charge across the battery;
+$\bm F$ is that drive per unit length. It is separate from the electric
+field $\bm E$ made by charges.
+
+In steady state $\nabla\cdot\bm J=0$: charge does not build up inside
+the conductor. Current cannot cross either conductor--air surface, so
+$\bm J\cdot\bm n=0$ there. At a material junction, the potential and
+normal current are continuous. No terminal voltage is prescribed,
+because the conductor forms a closed loop.
+
+\section{Turning conservation into equations}
+The shared derivation in \texttt{fem.tex} starts with
+$\bm a=c(\nabla u-\bm f)$ and $\nabla\cdot\bm a=0$. Here choose
+$u=V$, $c=\gamma$, and $\bm f=\bm F$, so $\bm a=-\bm J$.
+The boundary term from integration by parts vanishes because
+$\bm J\cdot\bm n=0$ on both conductor surfaces. Hence, for each
+allowed test function $w$,
+\begin{equation}
+ \int_{\Omega_c}\gamma\nabla V\cdot\nabla w\,dA
+ =\int_{\Omega_c}\gamma\bm F\cdot\nabla w\,dA.
+ \label{eq:weak}
+\end{equation}
+Triangles on both sides of a material junction share a common edge.
+Thus the finite-element potential is continuous there, and
+equation~\eqref{eq:weak} makes the normal currents balance.
+
+\section{Choosing a potential reference}
+If $v$ solves the conductor equations, then $v+C$ also solves them:
+only its gradient appears. This is why the assembled matrix has
+a redundant degrees of freedom.
+The solver fixes one conductor vertex at zero
+and solves the remaining free-vertex equations. It then chooses a more
+useful reference by subtracting the mean potential over the conductor.
+Let $\mathcal T_c$ be the set of conductor triangles. Then
+\begin{equation}
+ \overline V=
+ \frac{\displaystyle\sum_{h\in\mathcal T_c}
+       A_h(V_{h,0}+V_{h,1}+V_{h,2})/3}
+      {\displaystyle\sum_{h\in\mathcal T_c}A_h},
+ \qquad V\leftarrow V-\overline V.
+\end{equation}
+For a linear function on a triangle, the average of its three vertex
+values is its area average. The final shift changes no electric field
+or current.
+
+\section{Fields used by the app}
+After solving for the potential, the field and current in each
+conductor triangle are
+\begin{equation}
+ \bm E_h=-\sum_{i=0}^2 V_{h,i}\nabla N_{h,i},\qquad
+ \bm J_h=\frac{\bm E_h+\bm F_h}{\rho_h}.
+\end{equation}
+Both vectors are constant within a triangle. The app samples these
+vectors to draw electric-field and current arrows. Air current is zero;
+the electric field in air is calculated in \texttt{exterior.tex}.
+
+\paragraph{Code:} \texttt{calculations/conduction.py}.
+\end{document}

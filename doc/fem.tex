@@ -1,0 +1,109 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\title{The finite-element calculation used by the circuit model}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Problem Setup}
+Our goal is to solve $\nabla\cdot\bm a=0$ over domain $\Omega$, with
+$\bm a=c(\nabla u-\bm f)$. For our specific setup, $u$ is the electric potential.
+For the conduction problem inside the conductors, $\bm a = -\bm J$, $c$ is the conductivity,
+and $\bm f$ is the driving field within the battery.
+For the electrostatics problem outside the conductors, $c=1$, $\bm f=0$.
+
+The problem domain $\Omega$ is first divided into triangles. For each vertex $i$,
+define $N_i(\bm x)$ as a basis function that takes value $1$ at vertex $i$ and value $0$ at all
+other vertices. Between vertices, the function is piecewise linear. Over domain $\Omega$,
+we assume
+\begin{equation}
+    u(\bm x) = \sum_i u_i N_i(\bm x),
+\end{equation}
+where $u_i$ is the value of the potential at vertex $i$.
+We may know the potential values at a subset of vertices; the
+values $u_i$ at the remaining vertices are unknowns we need to solve.
+
+\section{Turning field equations into a linear system}
+To derive a linear system, multiply $\nabla\cdot\bm a=0$ by a function $w$ and use the
+product rule and the divergence theorem:
+\begin{align}
+ 0
+ &=\int_\Omega w\,\nabla\cdot\bm a\,dA \\
+ &=\int_\Omega\nabla\cdot(w\bm a)\,dA
+   -\int_\Omega\bm a\cdot\nabla w\,dA \\
+ &=\int_{\partial\Omega}w\,\bm a\cdot\bm n\,ds
+   -\int_\Omega\bm a\cdot\nabla w\,dA .
+\end{align}
+After substituting $\bm a$, this is
+\begin{equation}
+ \int_\Omega c\,\nabla u\cdot\nabla w\,dA
+ =\int_\Omega c\,\bm f\cdot\nabla w\,dA
+  +\int_{\partial\Omega}w\,\bm a\cdot\bm n\,ds .
+ \label{eq:with-boundary}
+\end{equation}
+
+Let's focus on $\int_{\partial\Omega}w\,\bm a\cdot\bm n\,ds$. If (1) $w=0$ on
+the boundary $\partial\Omega$, or (2) $\bm a\cdot\bm n = 0$ on the boundary
+$\partial\Omega$, this term will vanish. Assume $w$ is chosen such that either
+(1) or (2) is true, we have
+\begin{equation}
+ \int_\Omega c\,\nabla u\cdot\nabla w\,dA
+ =\int_\Omega c\,\bm f\cdot\nabla w\,dA .
+ \label{eq:weak}
+\end{equation}
+
+The remaining question is how to choose $w$. We choose $w(x) = N_i(\bm x)$
+for vertex $i$ that is not on $\partial\Omega$, and for vertex $i$ that is
+on $\partial\Omega$ if we have $\bm a\cdot\bm n=0$ on $\partial\Omega$.
+If vertex $i$ is not on $\partial\Omega$, from the definition of $N_i$, we know
+$N_i(\bm x)=0$ on $\partial\Omega$, so the condition (1) above is satisfied.
+For a chosen vertex that is on $\partial\Omega$, the condition (2) above is
+satisfied. Thus Equation \ref{eq:weak} holds for our chosen $w$.
+
+\section{The linear system in discrete form}
+We turn the integral in Equation \ref{eq:weak} into a summation over
+triangles in the mesh:
+\begin{equation}
+    \sum_h \int_{\Omega_h} c_h\,\nabla u_h\cdot\nabla w_h\,dA
+ =\sum_h \int_{\Omega_h} c_h\,\bm f_h\cdot\nabla w_h\,dA.
+ \label{eq:sum_triangles}
+\end{equation}
+We label triangle $h$'s vertices as "$h,0$", "$h,1$", and "$h,2$", and get
+\begin{equation}
+    u_h(\bm x)=u_{h,0}N_{h,0}(\bm x)+u_{h,1}N_{h,1}(\bm x)+u_{h,2}N_{h,2}(\bm x).
+\end{equation}
+Substituting this expression into Equation \ref{eq:sum_triangles}, we get
+\begin{equation}
+    \sum_h\sum_{k=0}^2 \int_{\Omega_h}c_h\, u_{h,k}\nabla N_{h,k}\cdot\nabla w_h\,dA
+ =\sum_h \int_{\Omega_h}c_h\,\bm f_h\cdot\nabla w_h\,dA.
+\end{equation}
+In our problems, the integrands above are constant within each triangle $h$.
+Writing its area as $A_h$, we get
+\begin{equation}
+    \sum_h\sum_{k=0}^2 c_hA_h\, (\nabla N_{h,k}\cdot\nabla w_h)\, u_{h,k}
+    =\sum_h c_hA_h\,(\bm f_h\cdot\nabla w_h).
+\end{equation}
+This is a linear system in discrete form, where the subset of $u_{h,k}$ that are
+unknown are variables to solve, and the number of equations is the number of different
+$w$ functions that we choose according the rules specified above.
+
+\section{Gradients on a triangle}
+To keep the notation simplified, we hide the index $h$, and consider a
+generic triangle with vertices $\bm x_0$, $\bm x_1$, and $\bm x_2$.
+The three corresponding basis functions are $N_0(\bm x)$, $N_1(\bm x)$,
+$N_2(\bm x)$.
+
+Set $\bm p=\bm x_1-\bm x_0$, $\bm q=\bm x_2-\bm x_0$, and
+$D=p_xq_y-p_yq_x$. The triangle area is $A=|D|/2$. The basis gradients are
+\begin{equation}
+ \nabla N_1=\frac{(q_y,-q_x)}{D},\qquad
+ \nabla N_2=\frac{(-p_y,p_x)}{D},\qquad
+ \nabla N_0=-\nabla N_1-\nabla N_2 .
+\end{equation}
+The signed $D$ gives the same physical gradients whether the vertices are
+listed clockwise or counterclockwise.
+
+\paragraph{Code:} \texttt{calculations/fem.py}.
+\end{document}

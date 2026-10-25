@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\title{Energy flow and power exchange}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Problem Setup}
+The exterior calculation supplies an in-plane electric field
+$\bm E=(E_x,E_y,0)$ throughout the mesh. The magnetic calculation
+supplies $\bm B=(0,0,B_z)$. We want to show where electromagnetic
+energy flows and where the battery supplies energy that the
+conductor absorbs as heat.
+
+\section{Deriving the energy-flow vector}
+In this model $\bm H=\bm B/\mu$. The Poynting vector is the
+cross product
+\begin{equation}
+ \bm S=\bm E\times\bm H
+      =\frac{B_z}{\mu}(E_y,-E_x,0).
+ \label{eq:poynting}
+\end{equation}
+The electric field is constant on each triangle, while $B_z$
+is linear there. Thus $\bm S$ is linear within a triangle.
+Its exact triangle average is
+\begin{equation}
+ \overline{\bm S}_h
+ =\frac{\overline B_{z,h}}{\mu}(E_{y,h},-E_{x,h}),
+ \qquad
+ \overline B_{z,h}
+ =\frac{b_{h,0}+b_{h,1}+b_{h,2}}{3}.
+\end{equation}
+The app draws arrows from these averages. They describe energy
+flow, not the motion of electrons. In the strictly two-dimensional
+model, $B_z=0$ in the outside air, so $\bm S=0$ there even though
+$\bm E$ may be nonzero. The cavity can have nonzero energy flow
+because its magnetic field is generally nonzero.
+
+To connect this flow to the circuit, use the vector identity
+\begin{equation}
+ \nabla\cdot(\bm E\times\bm H)
+ =\bm H\cdot(\nabla\times\bm E)
+  -\bm E\cdot(\nabla\times\bm H).
+\end{equation}
+In steady state $\nabla\times\bm E=0$, and Ampere's law gives
+$\nabla\times\bm H=\bm J$. Therefore
+\begin{equation}
+ \nabla\cdot\bm S=-\bm J\cdot\bm E.
+ \label{eq:balance}
+\end{equation}
+The relation says that energy leaving a small volume through
+the field is balanced by electrical work inside it.
+
+\section{Power supplied by the battery and absorbed as heat}
+Inside the conductor, the current law is
+$\rho\bm J=\bm E+\bm F$. Rearranging and taking the dot
+product with $\bm J$ gives
+\begin{equation}
+ \bm J\cdot\bm E
+ =\rho|\bm J|^2-\bm J\cdot\bm F.
+ \label{eq:work}
+\end{equation}
+The term $\rho|\bm J|^2$ is Joule heating in the wire,
+battery, and resistors. The term $\bm J\cdot\bm F$
+is power supplied by the battery's driving field and
+is zero outside the battery. The app's power-exchange
+view shows
+\begin{equation}
+ p_{\rm exchange,h}
+ =\bm J_h\cdot\bm F_h-\rho_h|\bm J_h|^2.
+\end{equation}
+Positive values mean net supply, while negative values
+mean net absorption as heat. In air, current and both
+power-density terms are zero.
+
+The battery-power and resistor-heating readouts sum the
+corresponding triangle densities times area. Let $\mathcal T_B$ be
+the set of battery triangles and $\mathcal T_R$ the set of resistor
+triangles:
+\begin{equation}
+ P'_{\rm battery}
+ =\sum_{h\in\mathcal T_B}A_h\,\bm J_h\cdot\bm F_h,
+ \qquad
+ P'_{\rm resistors}
+ =\sum_{h\in\mathcal T_R}A_h\,\rho_h|\bm J_h|^2.
+\end{equation}
+These powers are per unit depth in the unchanged $z$
+direction. Since EMF is work per unit charge, the displayed
+loop current is $I'=P'_{\rm battery}/\mathcal E$ when
+$\mathcal E\ne0$.
+
+\paragraph{Code:} \texttt{calculations/poynting.py}.
+\end{document}

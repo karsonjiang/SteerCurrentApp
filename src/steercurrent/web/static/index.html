@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SteerCurrent · Circuit simulator</title><link rel="stylesheet" href="/style.css"></head>
+<body class="presentation" data-controls-open="false" data-physics-open="false">
+<header>
+<a class="brand" href="/" aria-label="SteerCurrent home"><span class="brandmark" aria-hidden="true">↗</span><span>SteerCurrent</span></a>
+<span class="model-title">Single-loop circuit <span>2D · steady state</span></span>
+<div class="mode-switch" role="group" aria-label="App mode"><button id="mode-present" class="active" aria-pressed="true">Guided</button><button id="mode-explore" aria-pressed="false">Explore</button></div>
+</header>
+<main>
+<div class="workspace">
+<aside id="configuration-panel" class="panel controls" aria-label="Circuit parameters" hidden>
+<div class="controls-scroll">
+<div class="panel-heading"><h2>Circuit parameters</h2><button id="close-controls" class="small" aria-label="Collapse configuration panel">Collapse</button></div>
+<label for="shape">Loop geometry</label>
+<select id="shape"><option value="rectangle">Rectangle</option><option value="step">L-shaped loop</option><option value="u">U-shaped loop</option><option value="stairs">Stepped loop</option></select>
+<div class="length-row"><label for="loop-length">Loop length</label><span class="unit">model units</span></div>
+<div class="input-action"><input id="loop-length" type="number" min="24" max="80" step="0.5" value="40"><button id="new-loop" class="small" title="Replace the selected shape with a new loop at this length and reset its components">New loop</button></div>
+<details class="control-help"><summary>Geometry help</summary><p>Each shape starts as a fresh 40-unit example. Switch away and back to resume your edits. New loop replaces the selected shape.</p><p>Drag handles to change length. Resistor ends follow the wire and can stretch or shrink. New loop starts at the entered length and resets components.</p></details>
+<section class="component-section">
+<div class="row"><h3>Components</h3><button id="add-resistor" class="small">+ Resistor</button></div>
+<div id="components" class="components"></div>
+<section id="inspector" aria-label="Selected component settings"></section>
+</section>
+<details class="control-help"><summary>Interaction help</summary><p>Choose a loop shape, drag the handles or resistors, and select a field to view. Use Guided mode for a step-by-step walkthrough or Explore to edit components.</p><p>Green handles reshape · click a resistor for end handles · drag to move · scroll to zoom</p></details>
+</div>
+<div class="run-controls">
+<h3>Solver &amp; display</h3>
+<label for="resolution">Calculation detail</label><select id="resolution"><option value="quick">Quick exploration</option><option value="fine">Finer mesh</option></select>
+<label class="check"><input type="checkbox" id="auto" checked> Automatically update fields</label>
+<button id="calculate" class="primary" disabled>Automatic updates on</button>
+</div>
+</aside>
+<section class="stage" aria-label="Interactive circuit workspace">
+<div class="stage-bar">
+<div class="field-controls">
+<button id="toggle-controls" class="physics-trigger panel-toggle" aria-controls="configuration-panel" aria-expanded="false" title="Open circuit geometry, battery, and resistor settings">Circuit parameters <span aria-hidden="true">↗</span></button>
+<div class="views"><label for="field-select">View</label><select id="field-select">
+<optgroup label="Fields"><option value="potential">Potential</option><option value="electric">Electric field</option><option value="magnetic">Magnetic field</option></optgroup>
+<optgroup label="Transport"><option value="current">Current</option><option value="current_strength">Current strength</option><option value="energy">Energy flow</option></optgroup>
+<optgroup label="Materials &amp; interactions"><option value="charge">Charge</option><option value="power_exchange">Power exchange</option></optgroup>
+</select></div>
+<div class="demo-toolbar"><label for="demo-shape">Geometry</label><select id="demo-shape"><option value="step">L-shaped loop</option><option value="rectangle">Rectangle</option><option value="u">U-shaped loop</option><option value="stairs">Stepped loop</option></select></div>
+</div>
+<div class="stage-actions" role="group" aria-label="View and geometry controls">
+<button id="undo" class="icon" title="Undo last geometry or material edit" aria-label="Undo last edit">↶</button>
+<button id="zoom-out" class="icon" title="Zoom out" aria-label="Zoom out">−</button><button id="zoom-in" class="icon" title="Zoom in" aria-label="Zoom in">+</button>
+<button id="fit" class="small" title="Reset only the camera to fit the loop">Fit view</button>
+<button id="reset" class="small" title="Restore the bundled example and clear saved shape edits">Reset example</button>
+</div>
+</div>
+<div class="display-bar"><div class="view-context"><span id="view-label">Current density J</span><button id="toggle-physics" class="physics-trigger panel-toggle" aria-controls="physics-panel" aria-expanded="false" title="Open equations, definitions, and measurements for the selected field">Physics &amp; equations <span aria-hidden="true">↗</span></button></div><div class="display-options"><label class="check"><input type="checkbox" id="show-mesh"> Mesh</label><label class="check"><input type="checkbox" id="show-handles" checked> Edit handles</label></div></div>
+<div id="viewport" class="viewport"><canvas id="canvas" aria-label="Circuit diagram. Drag resistors along the loop and circular handles to reshape it. Component settings are also available in the side panel."></canvas><div id="probe" class="probe">Move over the diagram to inspect a field value.</div></div>
+<div class="legend-bar"><span id="legend"></span></div>
+<div class="stage-footer"><span id="freshness" class="badge">Not calculated</span><span id="status" class="status" role="status" aria-live="polite">Loading the example…</span><span id="mesh-info">Loop length 40</span></div>
+<p id="error" class="error" role="alert" hidden></p>
+<details id="numerical-panel" class="numerical-panel"><summary>Numerical analysis</summary>
+<div class="numerical-content">
+<dl class="instrument-readouts">
+<div><dt>Result</dt><dd id="numerical-state">Not calculated</dd></div>
+<div><dt>Mesh triangles</dt><dd id="numerical-elements">—</dd></div>
+<div><dt>Mesh vertices</dt><dd id="numerical-vertices">—</dd></div>
+<div><dt>Computation time</dt><dd id="numerical-time">—</dd></div>
+<div><dt>Calculation detail</dt><dd id="numerical-resolution">—</dd></div>
+</dl>
+<div class="solver-method"><h3>Method</h3><p>Linear (P1) triangular finite elements. Sparse direct solves using SciPy <code>spsolve</code>.</p><p>Time includes meshing and all field calculations. Counts and timing refer to the displayed result, or the last completed result when edits are pending.</p></div>
+</div></details>
+<details id="guide-panel" class="story" open>
+<summary>Guided walkthrough <span id="story-count">1 / 7</span></summary>
+<div class="story-content">
+<div class="story-body">
+<div class="story-progress" id="story-progress" aria-hidden="true"></div>
+<p class="story-kicker" id="story-kicker"></p>
+<h2 id="story-title"></h2>
+<p id="story-question" class="story-question"></p>
+<p id="story-action" class="story-action"></p>
+<div id="story-views" class="story-views" hidden></div>
+<button id="story-reveal" class="story-reveal" hidden>Reveal answer</button>
+<p id="story-conclusion" class="story-conclusion" hidden></p>
+<details id="guide-explanation"><summary>Explanation &amp; equation</summary><div id="story-explanation" class="story-explanation" hidden><p id="story-explanation-text"></p><div id="story-formula" class="story-formula"></div></div></details>
+</div>
+<div class="story-footer"><details class="guide-readouts" open><summary>Current simulation</summary><div class="story-readouts"><div><span>Loop current</span><strong id="story-current">—</strong></div><div><span>Battery power</span><strong id="story-power">—</strong></div><div id="story-resistor-row" hidden><span>Resistor heating</span><strong id="story-resistor">—</strong></div></div></details><div class="story-nav"><button id="story-back">← Back</button><button id="story-next" class="primary">Next →</button></div></div>
+</div>
+</details>
+</section>
+<aside id="physics-panel" class="panel lesson" aria-label="Physics explanation" hidden><div class="panel-heading"><h2>Physics</h2><button id="close-physics" class="small" aria-label="Close physics panel">Close</button></div><h3 class="section-label">Physical interpretation</h3><p class="eyebrow">Selected field</p><h2 id="lesson-title"></h2><p id="lesson-body"></p><div id="formula" class="formula"></div><details class="experiment"><summary>Suggested experiment</summary><div><span class="eyebrow">Try it</span><p id="experiment"></p></div></details><h3 class="section-label">Current simulation</h3><div class="readouts"><div><span>Loop current</span><strong id="current-readout">—</strong></div><div><span>Battery power</span><strong id="power-readout">—</strong></div><div id="resistor-readout-row" hidden><span>Resistor heating</span><strong id="resistor-readout">—</strong></div></div><p class="hint">Values use model units, with current and power per unit depth. This is a steady, two-dimensional circuit.</p><h3 class="section-label">Further explanation</h3><details><summary>How shape handles work</summary><p>Drag the green handles outside the wire. Top and bottom handles move vertically; the right handle moves horizontally. Corner handles change steps or indentations while keeping that preset's turns intact. The loop length changes as you resize it. Each resistor end follows its wire section, so the resistor can stretch or shrink. An end that reaches a corner moves to the nearest valid spot. A resize stops when the loop would overlap itself, components would overlap, or the loop exceeds the supported size.</p><div id="shape-inputs"></div></details><details><summary>About this model</summary><p>Wires have finite resistance. The battery supplies a driving force inside its material. Outside potential is approximated by a distant zero-potential boundary, with net circuit charge set to zero. Corners are sharp; fields very close to them depend on mesh resolution.</p></details></aside>
+</div>
+</main><script type="module" src="/app.js"></script>
+</body></html>

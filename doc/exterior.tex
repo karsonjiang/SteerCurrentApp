@@ -1,0 +1,131 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\title{Electric potential in the cavity and outside}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Problem Setup}
+The conductor potential $V_c$ is already known from the conduction
+calculation. The same mesh also covers the air inside the loop's cavity
+and the air outside the conductor. These are separate regions; together
+call them $\Omega_a$. The app assumes uniform permittivity $\epsilon$
+and no volume charge in air. Gauss's law and
+$\bm E=-\nabla V$ give
+\begin{equation}
+ \nabla\cdot(\epsilon\bm E)=0
+ \quad\Longrightarrow\quad
+ \nabla^2V=0\quad\text{in }\Omega_a.
+\end{equation}
+The distant rectangular boundary is held at $V=0$ to approximate open
+space. Potential is continuous at a conductor--air surface, so its air
+value there must equal the conductor value.
+
+There is one ambiguity: conduction determines $V_c$ only up to a
+constant. Shifting the conductor potential relative to the fixed far
+boundary changes the electric field outside. Write the conductor--air
+boundary value as $V_c+C$. The unknown $C$ will be chosen so the
+circuit has zero net charge.
+
+\section{Solving the air equation for a given boundary value}
+For air, the generic equation in \texttt{fem.tex} has $c=1$ and
+$\bm f=0$. Every air boundary has a prescribed potential: the
+conductor surfaces have $V_c+C$, and the far rectangle has zero.
+We choose test functions $w$ as the basis functions of interior air vertices.
+These basis functions are zero on the boundary, so the boundary integral
+term in \texttt{fem.txt} vanishes.
+The resulting free-vertex equations are
+\begin{equation}
+ \int_{\Omega_a}\nabla V\cdot\nabla w\,dA=0.
+\end{equation}
+Each air triangle contributes
+$K^{(h)}_{ij}=A_h\nabla N_{h,i}\cdot\nabla N_{h,j}$, with no volume-source
+contribution. The same assembled system contains both the cavity
+and outside triangles. Each air region has its own prescribed
+boundary values.
+
+We do not yet know $C$, but this equation is linear. Solve it first
+for two sets of boundary values:
+\begin{align}
+ U|_{\rm conductor}&=V_c,& U|_{\rm far}&=0,\\
+ H|_{\rm conductor}&=1,& H|_{\rm far}&=0.
+\end{align}
+Both $U$ and $H$ satisfy the zero-source air equation. The solution
+for any offset is therefore
+\begin{equation}
+ V_a=U+CH.
+ \label{eq:combination}
+\end{equation}
+Inside the enclosed cavity $H=1$, so changing $C$ shifts the cavity
+potential without changing its electric field. Outside, $H$ changes
+from one at the conductor to zero at the far boundary.
+
+\section{Finding the offset from charge neutrality}
+The far boundary surrounds the whole circuit. By Gauss's law, the
+total enclosed charge per unit depth is
+\begin{equation}
+ Q'=\epsilon\oint_{\Gamma_{\rm far}}\bm E\cdot\bm n\,ds
+   =-\epsilon\oint_{\Gamma_{\rm far}}\nabla V\cdot\bm n\,ds.
+\end{equation}
+We want $Q'=0$, so we need the total outward flux of $\nabla V$
+through $\Gamma_{\rm far}$. To obtain it from the air solution,
+let $\mathcal F$ be the set of far-boundary vertices and choose
+\begin{equation}
+ W_{\rm far}=\sum_{i\in\mathcal F}N_i.
+\end{equation}
+The basis functions sum to one along the far boundary, so
+$W_{\rm far}=1$ there. They are zero along the conductor surfaces,
+so $W_{\rm far}=0$ there. The integration-by-parts equation in
+\texttt{fem.tex}, with $c=1$ and $\bm f=0$, now gives
+\begin{align}
+ \int_{\Omega_a}\nabla V\cdot\nabla W_{\rm far}\,dA
+ &=\int_{\partial\Omega_a}W_{\rm far}\nabla V\cdot\bm n\,ds\\
+ &=\oint_{\Gamma_{\rm far}}\nabla V\cdot\bm n\,ds.
+\end{align}
+The cavity contributes no boundary term because $W_{\rm far}=0$
+on its conductor boundary. Thus the total charge is $-\epsilon$
+times this volume integral.
+
+For the computed piecewise-linear potential, use the triangle
+expansion from \texttt{fem.tex}:
+\begin{equation}
+ V_h=\sum_{k=0}^2V_{h,k}N_{h,k}.
+\end{equation}
+Writing $W_{{\rm far},h}$ for the restriction of $W_{\rm far}$
+to triangle $h$, the corresponding flux is
+\begin{align}
+ \Phi(V)
+ &:=\int_{\Omega_a}\nabla V\cdot\nabla W_{\rm far}\,dA\\
+ &=\sum_h\sum_{k=0}^2
+   A_hV_{h,k}\nabla N_{h,k}\cdot\nabla W_{{\rm far},h}.
+ \label{eq:reaction}
+\end{align}
+This is linear in the potential values. The far-boundary
+basis functions were excluded as test functions when solving for
+those values, but we can use their sum to calculate the flux afterward.
+
+Using equation~\eqref{eq:combination}, this flux is
+$\Phi(U+CH)=\Phi(U)+C\Phi(H)$. Set it to zero and solve the one remaining
+scalar equation:
+\begin{equation}
+ C=-\frac{\Phi(U)}{\Phi(H)}.
+\end{equation}
+The uniform factor $\epsilon$ cancels. This is why the code solves
+the air system twice: one solve gives the field caused by the
+conductor's varying potential, and the other gives the response to
+a uniform potential shift.
+
+\section{Completing the electric field}
+Add $C$ to the conductor's potentials and assign $U+CH$ to
+air vertices. Conductor and air share boundary vertices, so the
+combined potential is continuous. For each air triangle,
+\begin{equation}
+ \bm E_h=-\sum_{i=0}^2 V_{h,i}\nabla N_{h,i}.
+\end{equation}
+The constant shift leaves the conductor electric field unchanged.
+The app uses the completed field both inside and outside the circuit.
+
+\paragraph{Code:} \texttt{calculations/exterior.py}.
+\end{document}

@@ -1,0 +1,59 @@
+{
+  "config": {
+    "length": 40,
+    "width": 1.0,
+    "battery": {
+      "length": 2.0,
+      "emf": 1.0,
+      "resistivity": 0.01,
+      "polarity": 1
+    },
+    "resistors": [
+      {
+        "id": "R1",
+        "start": 10,
+        "end": 14,
+        "resistivity": 20.0
+      },
+      {
+        "id": "R2",
+        "start": 26,
+        "end": 30,
+        "resistivity": 8
+      }
+    ],
+    "wire_resistivity": 0.1
+  },
+  "shape": {
+    "points": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        4.0
+      ],
+      [
+        8.0,
+        4.0
+      ],
+      [
+        8.0,
+        0.0
+      ],
+      [
+        12.0,
+        0.0
+      ],
+      [
+        12.0,
+        -4.0
+      ],
+      [
+        0.0,
+        -4.0
+      ]
+    ]
+  }
+}

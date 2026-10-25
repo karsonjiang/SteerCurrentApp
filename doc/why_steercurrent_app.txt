@@ -1,0 +1,21 @@
+evidences of steering the current being poorly explained in high school curriculum:
+    https://apcentral.collegeboard.org/media/pdf/ap-physics-c-electricity-and-magnetism-course-and-exam-description.pdf : not included in physics C
+    https://www.per-central.org/perc/2014/files/PERC_AneLeniz.pdf
+    https://is.muni.cz/www/384/41226886/BookOfAbstracts_ICPE_EPEC_2013.pdf
+        Secondary Students’ Understandings of Electric Circuits Based on the Microscopic Surface Charge Model
+
+Alternative apps:
+    https://www.mysimulator.uk/electromagnetism/electromagnetism-physics/: for simple 1D circuit segment only, no surface charge, no dynamically adjust the shape, no steering current.
+    https://empcubed.msuperl.org/notes/week-05-moving-charges-batteries/q_in_wires/ : explain the concept so well, but this is not an app.
+    https://quantumprogress.wordpress.com/2011/07/17/a-great-vpython-program-for-exploring-the-surface-charge-on-a-wire/: looks like the app is not there any more.
+    https://www2.oberlin.edu/physics/dstyer/CircuitSurveyor/help.html: java app, does not have surface charge
+    https://quickfield.com/seminar/seminar_surface_charges.htm: QuickField is a legit competitor, which is very powerful and can do everything I want.
+
+Why need another app besides QuickField:
+(1) QuickField is a general-purpose engineering FEM package, we need a focused educational physics app.
+    1.1) QuickField is aimed mainly at engineers/researchers, we target students learning circuits and E&M.
+    1.2) QuickField requires defining geometry, materials, boundary conditions, meshing, and solver settings, we want to hide those details.
+    1.3) QuickField follows a model -> solve -> postprocess workflow; we want changing the wireshape and immediately see the physics update.
+    1.4) QuickField can visualize many quantities for many problems; we want to focus on surface charge -> E field -> current direction.
+    1.5) QuickField answers "what is the numerical field solution"; we answer "why does current know how to turn the wire".
+(2) QuickField is windows desktop software; we want a lightweight and browser-based app.

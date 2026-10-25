@@ -1,0 +1,63 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\title{Charge on conductor surfaces and component interfaces}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Problem Setup}
+The conduction and exterior calculations give an electric field
+$\bm E$ on every triangle. We want to know where charge must be to
+make that field. The app assumes the same permittivity $\epsilon$
+in every material and in air. Within a uniform conductor region,
+\begin{equation}
+ \nabla\cdot\bm J=0,\qquad
+ \bm J=\gamma(\bm E+\bm F).
+\end{equation}
+Both $\gamma$ and the battery driving field $\bm F$ are constant within
+that region, so $\nabla\cdot\bm E=0$ there. Air also has
+$\nabla\cdot\bm E=0$. Under this model, charge is represented on
+conductor--air surfaces and material interfaces, rather than as
+a density within the regions.
+
+\section{Charge from the jump in electric field}
+Consider a very thin box crossing an interface. Let its two broad
+faces have area $A$, and let unit normal $\bm n$ point from side 1
+to side 2. Gauss's law for the electric displacement
+$\bm D=\epsilon\bm E$ says that the outgoing flux equals the
+enclosed charge:
+\begin{equation}
+ A\bm D_2\cdot\bm n-A\bm D_1\cdot\bm n=\sigma A.
+\end{equation}
+As the box thickness shrinks, its side flux vanishes. Dividing by
+$A$ gives the surface charge density
+\begin{equation}
+ \sigma=(\bm D_2-\bm D_1)\cdot\bm n
+       =\epsilon(\bm E_2-\bm E_1)\cdot\bm n.
+ \label{eq:jump}
+\end{equation}
+This equation applies both where a conductor meets air and where
+two conducting materials meet. The cavity-facing surface is also
+a conductor--air interface. The distant rectangle is only the
+edge of the computational domain, not a charged surface.
+
+\section{Evaluating the charge on mesh edges}
+The potential is piecewise linear, so the electric field is
+constant on each triangle, as explained in \texttt{fem.tex}.
+For each tagged physical edge $e$, the mesh supplies the two
+neighboring triangles $h_1$ and $h_2$ and a normal $\bm n_e$
+from the first toward the second. The code evaluates
+\begin{equation}
+ \sigma_e
+ =\epsilon(\bm E_{h_2}-\bm E_{h_1})\cdot\bm n_e.
+\end{equation}
+This gives one constant density for each tagged edge. The
+corresponding charge per unit depth on that edge is
+$q'_e=\sigma_e\ell_e$, where $\ell_e$ is its length.
+No second field solve is needed. Jumps between triangles of
+the same material are not labeled as physical charge sheets.
+
+\paragraph{Code:} \texttt{calculations/charges.py}.
+\end{document}

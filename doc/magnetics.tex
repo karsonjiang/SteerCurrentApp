@@ -1,0 +1,82 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,bm}
+\title{Magnetic field of the two-dimensional loop}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\section{Problem Setup}
+The conduction calculation gives an in-plane current
+$\bm J=(J_x,J_y,0)$. The model is unchanged along the $z$
+direction and assumes uniform permeability $\mu$, with no
+applied magnetic field. Under these assumptions, the magnetic
+field has only a $z$ component:
+$\bm B=(0,0,B_z(x,y))$.
+
+Ampere's law, $\nabla\times\bm B=\mu\bm J$, then becomes
+\begin{equation}
+ (\partial_yB_z,-\partial_xB_z)=\mu(J_x,J_y),
+ \qquad
+ \nabla B_z=\mu(-J_y,J_x).
+ \label{eq:ampere}
+\end{equation}
+There is no current in air, so $\nabla B_z=0$ there: $B_z$
+is constant in each connected air region. The outside constant
+is set to zero. The cavity constant, called $C_B$, must be
+determined from the current. With no idealized sheet current
+at the conductor surfaces, $B_z$ is continuous. Thus it is
+zero on the outer conductor surface and $C_B$ on the
+cavity-facing surface.
+
+\section{Fit the $B_z$ field}
+Equation~\eqref{eq:ampere} suggests integrating
+$\mu(-J_y,J_x)$ along a path to obtain $B_z$. However,
+due to numeric errors of the finite-element method,
+different paths could give different approximate values.
+This motivates an optimization approach below.
+
+Let $\bm g_{*,h}=\mu(-J_{y,h},J_{x,h})$ be the gradient
+requested by Ampere's law in conductor triangle $h$.
+Represent $B_z$ by a continuous piecewise-linear function
+$\widetilde B_z = \sum_{i}b_iN_i$,
+where the summation is over all conductor interior vertices
+and conductor-cavity vertices. We further constraint all
+conductor-cavity vertices share the same $b_i=C_B$.
+With this choice of vertices, the boundary conditions are
+automatically satisfied, that is,
+\begin{equation}
+ \widetilde B_z|_{\Gamma_{\rm outer}}=0,\quad
+ \widetilde B_z|_{\Gamma_{\rm cavity}}=C_B.
+\end{equation}
+
+Our goal is to minimize the area-weighted
+difference:
+\begin{equation}
+ \min_{\widetilde B_z}
+ \frac12\sum_{h\in\mathcal T_c}A_h
+ \left|\sum_{i=0}^2 b_{h,i}\nabla N_{h,i}-\bm g_{*,h}\right|^2,
+ \label{eq:fit}
+\end{equation}
+Here $\mathcal T_c$ is the set of conductor triangles, and $b_{h,i}$
+is the value of $\widetilde B_z$ at local vertex $i$ of triangle $h$.
+It is understood that $b_{h,i}=0$ if the vertex falls onto conductor-outer
+boundary and $b_{h,i}=C_B$ if the vertex falls onto conductor-cavity boundary.
+Taking derivative to Equation \ref{eq:fit} gives a linear system that
+we can solve to get $\widetilde B_z$.
+
+\section{Field used by the app}
+The app stores the solved $B_z$ at conductor vertices, fills
+cavity vertices with $C_B$, and fills outside vertices with
+zero. The magnetic view interpolates those nodal values
+within each triangle. The energy-flow calculation uses the
+triangle average
+\begin{equation}
+ \overline B_{z,h}=\frac{b_{h,0}+b_{h,1}+b_{h,2}}{3}.
+\end{equation}
+This is a strictly two-dimensional magnetic model; it is not
+the magnetic field of a finite three-dimensional wire.
+
+\paragraph{Code:} \texttt{calculations/magnetics.py}.
+\end{document}
