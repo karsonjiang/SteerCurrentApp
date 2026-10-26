@@ -12,6 +12,13 @@ A battery-only charge model is included to motivate the distribution of charge a
 These results are rendered interactively in the browser. Users can reconfigure the circuit
 and see the results update accordingly.
 
+## Live Demo
+
+[Open SteerCurrent in your browser](https://steercurrent.onrender.com/). Start with
+Guided mode for a guided lesson, or use Explore mode to reshape circuits and
+investigate the results yourself. The server runs one calculation at a time, so
+simultaneous visitors may need to wait briefly for updated results.
+
 ## Install the Python environment
 
 ```bash
