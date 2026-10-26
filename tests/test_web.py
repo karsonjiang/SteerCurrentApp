@@ -10,7 +10,7 @@ import threading
 import numpy as np
 import pytest
 
-from steercurrent.web.server import Jobs
+from steercurrent.web.server import Jobs, same_origin
 from steercurrent.web.simulation import simulate, validate_request
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,6 +66,13 @@ def test_invalid_requests_fail_before_meshing(request_data, mutation):
     mutation(request_data)
     with pytest.raises(ValueError):
         validate_request(request_data)
+
+
+def test_post_origin_accepts_https_proxy_and_rejects_other_sites():
+    host = 'steercurrent.onrender.com'
+    assert same_origin(f'https://{host}', host)
+    assert same_origin(f'http://{host}', host)
+    assert not same_origin('https://another.example', host)
 
 
 def test_queue_is_bounded_and_recovers_after_failure():

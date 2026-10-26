@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import mimetypes
 import multiprocessing
+import os
 from pathlib import Path
 from queue import Queue, Full
 import threading
@@ -16,6 +17,11 @@ from .simulation import simulate, validate_request
 
 _STATIC = Path(__file__).with_name('static')
 _MAX_BODY = 64_000
+
+
+def same_origin(origin, host):
+    """Accept the browser's HTTPS origin behind an HTTP-terminating proxy."""
+    return not origin or origin in (f'http://{host}', f'https://{host}')
 
 
 class Jobs:
@@ -118,7 +124,8 @@ def make_server(host, port, jobs):
 
         def do_POST(self):
             origin = self.headers.get('Origin')
-            if origin and origin != f'http://{self.headers.get("Host")}':
+            host = self.headers.get('Host')
+            if not same_origin(origin, host):
                 return self._send(403, {'message': 'Use the app from this server address.'})
             path = urlsplit(self.path).path
             if path not in ('/api/validate', '/api/jobs'):
@@ -151,7 +158,7 @@ def make_server(host, port, jobs):
 def main():
     parser = argparse.ArgumentParser(description='Launch the local SteerCurrent circuit playground.')
     parser.add_argument('--host', default='127.0.0.1')
-    parser.add_argument('--port', type=int, default=8000)
+    parser.add_argument('--port', type=int, default=int(os.environ.get('PORT', '8000')))
     args = parser.parse_args()
     # Spawn gives the numerical worker a fresh process, with Gmsh on its main thread.
     with ProcessPoolExecutor(max_workers=1, mp_context=multiprocessing.get_context('spawn')) as executor:
